@@ -1,4 +1,4 @@
-pwd#!/bin/bash
+#!/bin/bash
 #
 # Rails Ready
 #
@@ -121,18 +121,17 @@ echo "==> done..."
 
 
 if [ $whichRubyVersion -eq 1 ] ; then
-  ruby_version="1.9.3"
-  ruby_version_string="ruby-1.9.3-p0"
-  ruby_source_url="http://ftp.ruby-lang.org/pub/ruby/1.9/ruby-1.9.3-p0.tar.gz"
-  ruby_source_tar_name="ruby-1.9.3-p0.tar.gz"
-  ruby_source_dir_name="ruby-1.9.3-p0"
+  ruby_version="ruby-1.9.3-p0"
+  ruby_source_root_url="http://ftp.ruby-lang.org/pub/ruby/1.9/"
 elif [ $whichRubyVersion -eq 2 ] ; then
-  ruby_version="2.0.0"
-  ruby_version_string="ruby-2.0.0-p0"
-  ruby_source_url="http://ftp.ruby-lang.org/pub/ruby/2.0/ruby-2.0.0-p0.tar.gz"
-  ruby_source_tar_name="ruby-2.0.0-p0.tar.gz"
-  ruby_source_dir_name="ruby-2.0.0-p0"
+  ruby_version="ruby-2.0.0-p0"
+  ruby_source_root_url="http://ftp.ruby-lang.org/pub/ruby/2.0/"
 fi
+
+ruby_version_string=$ruby_version
+ruby_source_tar_name=$ruby_version".tar.gz"
+ruby_source_url=$ruby_source_root_url$ruby_source_tar_name
+ruby_source_dir_name=$ruby_version
 
 
 echo -e "\n=> Downloading and running recipe for $distro...\n"
@@ -147,13 +146,13 @@ echo -e "\n==> done running $distro specific commands..."
 #now that all the distro specific packages are installed lets get Ruby
 if [ $whichRuby -eq 1 ] ; then
   # Install Ruby
-  echo -e "\n=> Downloading Ruby $ruby_version_string \n"
+  echo -e "\n=> Downloading $ruby_version_string \n"
   cd $railsready_path/src && wget $ruby_source_url
   echo -e "\n==> done..."
-  echo -e "\n=> Extracting Ruby $ruby_version_string"
+  echo -e "\n=> Extracting $ruby_version_string"
   tar -xzf $ruby_source_tar_name >> $log_file 2>&1
   echo "==> done..."
-  echo -e "\n=> Building Ruby $ruby_version_string (this will take a while)..."
+  echo -e "\n=> Building $ruby_version_string (this will take a while)..."
   cd  $ruby_source_dir_name && ./configure --prefix=/usr/local >> $log_file 2>&1 \
    && make >> $log_file 2>&1 \
     && sudo make install >> $log_file 2>&1
@@ -184,7 +183,7 @@ elif [ $whichRuby -eq 2 ] ; then
     source /etc/profile.d/rvm.sh
   fi
   echo "==> done..."
-  echo -e "\n=> Installing Ruby $ruby_version_string (this will take a while)..."
+  echo -e "\n=> Installing $ruby_version_string (this will take a while)..."
   echo -e "=> More information about installing rubies can be found at http://rvm.beginrescueend.com/rubies/installing/ \n"
   rvm install $ruby_version >> $log_file 2>&1
   echo -e "\n==> done..."
@@ -197,7 +196,8 @@ else
   exit 1
 fi
 
-# Reload bash
+echo ""
+
 echo -e "\n=> Reloading shell so ruby and rubygems are available..."
 if [ -f ~/.bashrc ] ; then
   source ~/.bashrc
@@ -226,31 +226,31 @@ elif [ $whichRuby -eq 2 ] ; then
 fi
 echo "==> done..."
 
-if [ $whichServer -eq 1 ] ; then
-  echo -e "\n=> Installing Unicorn..."
-  if [ $whichRuby -eq 1 ] ; then
-    sudo gem install unicorn --no-ri --no-rdoc >> $log_file 2>&1
-  elif [ $whichRuby -eq 2 ] ; then
-    gem install unicorn --no-ri --no-rdoc >> $log_file 2>&1
-  fi
-  echo "==> done..."
-elif [ $whichServer -eq 2 ] ; then
-  echo -e "\n=> Installing Thin..."
-  if [ $whichRuby -eq 1 ] ; then
-    sudo gem install thin --no-ri --no-rdoc >> $log_file 2>&1
-  elif [ $whichRuby -eq 2 ] ; then
-    gem install thin --no-ri --no-rdoc >> $log_file 2>&1
-  fi
-  echo "==> done..."
-elif [ $whichServer -eq 3 ] ; then
-  echo -e "\n=> Installing Passenger..."
-  if [ $whichRuby -eq 1 ] ; then
-    sudo gem install passenger --no-ri --no-rdoc >> $log_file 2>&1
-  elif [ $whichRuby -eq 2 ] ; then
-    gem install passenger --no-ri --no-rdoc >> $log_file 2>&1
-  fi
-  echo "==> done..."
-fi
+# if [ $whichServer -eq 1 ] ; then
+#   echo -e "\n=> Installing Unicorn..."
+#   if [ $whichRuby -eq 1 ] ; then
+#     sudo gem install unicorn --no-ri --no-rdoc >> $log_file 2>&1
+#   elif [ $whichRuby -eq 2 ] ; then
+#     gem install unicorn --no-ri --no-rdoc >> $log_file 2>&1
+#   fi
+#   echo "==> done..."
+# elif [ $whichServer -eq 2 ] ; then
+#   echo -e "\n=> Installing Thin..."
+#   if [ $whichRuby -eq 1 ] ; then
+#     sudo gem install thin --no-ri --no-rdoc >> $log_file 2>&1
+#   elif [ $whichRuby -eq 2 ] ; then
+#     gem install thin --no-ri --no-rdoc >> $log_file 2>&1
+#   fi
+#   echo "==> done..."
+# elif [ $whichServer -eq 3 ] ; then
+#   echo -e "\n=> Installing Passenger..."
+#   if [ $whichRuby -eq 1 ] ; then
+#     sudo gem install passenger --no-ri --no-rdoc >> $log_file 2>&1
+#   elif [ $whichRuby -eq 2 ] ; then
+#     gem install passenger --no-ri --no-rdoc >> $log_file 2>&1
+#   fi
+#   echo "==> done..."
+# fi
 
 echo -e "\n#################################"
 echo    "### Installation is complete! ###"
