@@ -11,7 +11,7 @@
 shopt -s nocaseglob
 set -e
 
-script_runner=$(whoami)
+script_runner='deploy'
 bb_server_setup_path=$(cd && pwd)/bb_server_setup
 log_file="$bb_server_setup_path/install.log"
 
@@ -72,18 +72,16 @@ sudo -v >/dev/null 2>&1 || { echo $script_runner has no sudo privileges ; exit 1
 
 # Ask if you want to build Ruby or install RVM
 echo -e "\n"
-echo "Build Ruby or install RVM?"
-echo "=> 1. Build from source"
-echo "=> 2. Install RVM"
-echo -n "Select your Ruby type [1 or 2]? "
-read whichRuby
+echo "Are you ready to setup server for Bulletin Builder?"
+echo "=> 1. Yes"
+echo "=> 2. No"
+echo -n "Select Yes or No [1 or 2]? "
+read makeInstall
 
-if [ $whichRuby -eq 1 ] ; then
-  echo -e "\n\n!!! Set to build Ruby from source and install system wide !!! \n"
-elif [ $whichRuby -eq 2 ] ; then
-  echo -e "\n\n!!! Set to install RVM for user: $script_runner !!! \n"
+if [ $makeInstall -eq 1 ] ; then
+  echo -e "\n\n!!! Here we go.....!!! \n"
 else
-  echo -e "\n\n!!! Must choose to build Ruby or install RVM, exiting !!!"
+  echo -e "\n\n!!! OK then, Goodbye!!!"
   exit 1
 fi
 
@@ -108,57 +106,57 @@ fi
 echo -e "\n==> done running $distro specific commands..."
 
 #now that all the distro specific packages are installed lets get Ruby
-if [ $whichRuby -eq 1 ] ; then
-  # Install Ruby
-  echo -e "\n=> Downloading $ruby_version_string \n"
-  cd $bb_server_setup_path/src && wget $ruby_source_url
-  echo -e "\n==> done..."
-  echo -e "\n=> Extracting $ruby_version_string"
-  tar -xzf $ruby_source_tar_name >> $log_file 2>&1
-  echo "==> done..."
-  echo -e "\n=> Building $ruby_version_string (this will take a while)..."
-  cd  $ruby_source_dir_name && ./configure --prefix=/usr/local >> $log_file 2>&1 \
-   && make >> $log_file 2>&1 \
-    && sudo make install >> $log_file 2>&1
-  echo "==> done..."
-elif [ $whichRuby -eq 2 ] ; then
+# if [ $whichRuby -eq 1 ] ; then
+#   # Install Ruby
+#   echo -e "\n=> Downloading $ruby_version_string \n"
+#   cd $bb_server_setup_path/src && wget $ruby_source_url
+#   echo -e "\n==> done..."
+#   echo -e "\n=> Extracting $ruby_version_string"
+#   tar -xzf $ruby_source_tar_name >> $log_file 2>&1
+#   echo "==> done..."
+#   echo -e "\n=> Building $ruby_version_string (this will take a while)..."
+#   cd  $ruby_source_dir_name && ./configure --prefix=/usr/local >> $log_file 2>&1 \
+#    && make >> $log_file 2>&1 \
+#     && sudo make install >> $log_file 2>&1
+#   echo "==> done..."
+# elif [ $whichRuby -eq 2 ] ; then
   #thanks wayneeseguin :)
-  echo -e "\n=> Installing RVM the Ruby enVironment Manager http://rvm.beginrescueend.com/rvm/install/ \n"
-  \curl -L https://get.rvm.io | bash >> $log_file 2>&1
-  echo -e "\n=> Setting up RVM to load with new shells..."
-  #if RVM is installed as user root it goes to /usr/local/rvm/ not ~/.rvm
-  if [ -f ~/.bash_profile ] ; then
-    if [ -f ~/.profile ] ; then
-      echo 'source ~/.profile' >> "$HOME/.bash_profile"
-    fi
-  fi
-  echo "==> done..."
-  echo "=> Loading RVM..."
+echo -e "\n=> Installing RVM the Ruby enVironment Manager http://rvm.beginrescueend.com/rvm/install/ \n"
+\curl -L https://get.rvm.io | bash >> $log_file 2>&1
+echo -e "\n=> Setting up RVM to load with new shells..."
+#if RVM is installed as user root it goes to /usr/local/rvm/ not ~/.rvm
+if [ -f ~/.bash_profile ] ; then
   if [ -f ~/.profile ] ; then
-    source ~/.profile
+    echo 'source ~/.profile' >> "$HOME/.bash_profile"
   fi
-  if [ -f ~/.bashrc ] ; then
-    source ~/.bashrc
-  fi
-  if [ -f ~/.bash_profile ] ; then
-    source ~/.bash_profile
-  fi
-  if [ -f /etc/profile.d/rvm.sh ] ; then
-    source /etc/profile.d/rvm.sh
-  fi
-  echo "==> done..."
-  echo -e "\n=> Installing $ruby_version_string (this will take a while)..."
-  echo -e "=> More information about installing rubies can be found at http://rvm.beginrescueend.com/rubies/installing/ \n"
-  rvm install $ruby_version >> $log_file 2>&1
-  echo -e "\n==> done..."
-  echo -e "\n=> Using $ruby_version and setting it as default for new shells..."
-  echo "=> More information about Rubies can be found at http://rvm.beginrescueend.com/rubies/default/"
-  rvm --default use $ruby_version >> $log_file 2>&1
-  echo "==> done..."
-else
-  echo "How did you even get here?"
-  exit 1
 fi
+echo "==> done..."
+echo "=> Loading RVM..."
+if [ -f ~/.profile ] ; then
+  source ~/.profile
+fi
+if [ -f ~/.bashrc ] ; then
+  source ~/.bashrc
+fi
+if [ -f ~/.bash_profile ] ; then
+  source ~/.bash_profile
+fi
+if [ -f /etc/profile.d/rvm.sh ] ; then
+  source /etc/profile.d/rvm.sh
+fi
+echo "==> done..."
+echo -e "\n=> Installing $ruby_version_string (this will take a while)..."
+echo -e "=> More information about installing rubies can be found at http://rvm.beginrescueend.com/rubies/installing/ \n"
+rvm install $ruby_version >> $log_file 2>&1
+echo -e "\n==> done..."
+echo -e "\n=> Using $ruby_version and setting it as default for new shells..."
+echo "=> More information about Rubies can be found at http://rvm.beginrescueend.com/rubies/default/"
+rvm --default use $ruby_version >> $log_file 2>&1
+echo "==> done..."
+# else
+#   echo "How did you even get here?"
+#   exit 1
+# fi
 
 echo ""
 
@@ -175,19 +173,19 @@ fi
 echo "==> done..."
 
 echo -e "\n=> Updating Rubygems..."
-if [ $whichRuby -eq 1 ] ; then
-  sudo gem update --system --no-ri --no-rdoc >> $log_file 2>&1
-elif [ $whichRuby -eq 2 ] ; then
-  gem update --system --no-ri --no-rdoc >> $log_file 2>&1
-fi
+# if [ $whichRuby -eq 1 ] ; then
+#   sudo gem update --system --no-ri --no-rdoc >> $log_file 2>&1
+# elif [ $whichRuby -eq 2 ] ; then
+gem update --system --no-ri --no-rdoc >> $log_file 2>&1
+# fi
 echo "==> done..."
 
 echo -e "\n=> Installing Bundler..."
-if [ $whichRuby -eq 1 ] ; then
-  sudo gem install bundler --no-ri --no-rdoc >> $log_file 2>&1
-elif [ $whichRuby -eq 2 ] ; then
-  gem install bundler --no-ri --no-rdoc >> $log_file 2>&1
-fi
+# if [ $whichRuby -eq 1 ] ; then
+#   sudo gem install bundler --no-ri --no-rdoc >> $log_file 2>&1
+# elif [ $whichRuby -eq 2 ] ; then
+gem install bundler --no-ri --no-rdoc >> $log_file 2>&1
+# fi
 echo "==> done..."
 
 echo -e "\n#################################"
