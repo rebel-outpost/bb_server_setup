@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# Rails Ready
+# Bulletin Builder Server Setup
 #
-# Author: Josh Frye <joshfng@gmail.com>
+# Author: bob@rebel-outpost.com
 # Licence: MIT
 #
 # Contributions from: Wayne E. Seguin <wayneeseguin@gmail.com>
@@ -12,8 +12,8 @@ shopt -s nocaseglob
 set -e
 
 script_runner=$(whoami)
-railsready_path=$(cd && pwd)/railsready
-log_file="$railsready_path/install.log"
+bb_server_setup_path=$(cd && pwd)/bb_server_setup
+log_file="$bb_server_setup_path/install.log"
 
 control_c()
 {
@@ -26,17 +26,15 @@ trap control_c SIGINT
 
 clear
 
-echo "#################################"
-echo "########## Rails Ready ##########"
-echo "#################################"
+echo "###################################"
+echo "## Bulletin Builder Server Setup ##"
+echo "###################################"
 
 #determine the distro
 if [[ $MACHTYPE = *linux* ]] ; then
   distro_sig=$(cat /etc/issue)
   if [[ $distro_sig =~ ubuntu ]] ; then
     distro="ubuntu"
-  elif [[ $distro_sig =~ centos ]] ; then
-    distro="centos"
   fi
 elif [[ $MACHTYPE = *darwin* ]] ; then
   distro="osx"
@@ -45,7 +43,7 @@ elif [[ $MACHTYPE = *darwin* ]] ; then
       exit 1
     fi
 else
-  echo -e "\nRails Ready currently only supports Ubuntu, CentOS and OSX\n"
+  echo -e "\nBulletin Builder Server Setup currently only supports Ubuntu and OSX\n"
   exit 1
 fi
 
@@ -60,14 +58,14 @@ echo "run tail -f $log_file in a new terminal to watch the install"
 
 echo -e "\n"
 echo "What this script gets you:"
-echo " * Ruby (your choice of version)"
+echo " * Required versions of Rub and Rails"
 echo " * Imagemagick"
 echo " * libs needed to run Rails (sqlite, mysql, etc)"
 echo " * Bundler"
 echo " * Git"
 
 echo -e "\nThis script is always changing."
-echo "Make sure you got it from https://github.com/rebel-outpost/railsready"
+echo "Make sure you got it from https://github.com/rebel-outpost/bb_server_setup"
 
 # Check if the user has sudo privileges.
 sudo -v >/dev/null 2>&1 || { echo $script_runner has no sudo privileges ; exit 1; }
@@ -80,32 +78,6 @@ echo "=> 2. Install RVM"
 echo -n "Select your Ruby type [1 or 2]? "
 read whichRuby
 
-# Ask you which version of Ruby
-echo -e "\n"
-echo "Select Ruby version"
-echo "=> 1. 1.9.3"
-echo "=> 2. 2.0.0"
-echo -n "Select your Ruby version [1 or 2]? "
-read whichRubyVersion
-
-# Ask you which server
-echo -e "\n"
-echo "Select Rails Server"
-echo "=> 1. Unicorn"
-echo "=> 2. Thin"
-echo "=> 3. Passenger"
-echo -n "Select your server [1, 2 or 3]? "
-read whichServer
-
-# Ask you which db
-echo -e "\n"
-echo "Select database"
-echo "=> 1. Mongo"
-echo "=> 2. MySQL"
-echo "=> 3. PostgreSQL"
-echo -n "Select your database [1, 2 or 3]? "
-read whichDatabase
-
 if [ $whichRuby -eq 1 ] ; then
   echo -e "\n\n!!! Set to build Ruby from source and install system wide !!! \n"
 elif [ $whichRuby -eq 2 ] ; then
@@ -116,19 +88,11 @@ else
 fi
 
 echo -e "\n=> Creating install dir..."
-cd && mkdir -p railsready/src && cd railsready && touch install.log
+cd && mkdir -p bb_server_setup/src && cd bb_server_setup && touch install.log
 echo "==> done..."
 
-
-if [ $whichRubyVersion -eq 1 ] ; then
-  ruby_version="ruby-1.9.3-p0"
-  ruby_source_root_url="http://ftp.ruby-lang.org/pub/ruby/1.9/"
-elif [ $whichRubyVersion -eq 2 ] ; then
-  ruby_version="ruby-2.0.0-p0"
-  ruby_source_root_url="http://ftp.ruby-lang.org/pub/ruby/2.0/"
-fi
-
-ruby_version_string=$ruby_version
+ruby_version="ruby-1.9.3-p374"
+ruby_source_root_url="http://ftp.ruby-lang.org/pub/ruby/1.9/"
 ruby_source_tar_name=$ruby_version".tar.gz"
 ruby_source_url=$ruby_source_root_url$ruby_source_tar_name
 ruby_source_dir_name=$ruby_version
@@ -137,9 +101,9 @@ ruby_source_dir_name=$ruby_version
 echo -e "\n=> Downloading and running recipe for $distro...\n"
 #Download the distro specific recipe and run it, passing along all the variables as args
 if [[ $MACHTYPE = *linux* ]] ; then
-  wget --no-check-certificate -O $railsready_path/src/$distro.sh https://raw.github.com/rebel-outpost/railsready/master/recipes/$distro.sh && cd $railsready_path/src && bash $distro.sh $ruby_version $ruby_version_string $ruby_source_url $ruby_source_tar_name $ruby_source_dir_name $whichRuby $whichServer $whichDatabase $railsready_path $log_file
+  wget --no-check-certificate -O $bb_server_setup_path/src/$distro.sh https://raw.github.com/rebel-outpost/bb_server_setup/master/recipes/$distro.sh && cd $bb_server_setup_path/src && bash $distro.sh $ruby_version $ruby_version_string $ruby_source_url $ruby_source_tar_name $ruby_source_dir_name $whichRuby $whichServer $whichDatabase $bb_server_setup_path $log_file
 else
-  cd $railsready_path/src && curl -O https://raw.github.com/rebel-outpost/railsready/master/recipes/$distro.sh && bash $distro.sh $ruby_version $ruby_version_string $ruby_source_url $ruby_source_tar_name $ruby_source_dir_name $whichRuby $whichServer $whichDatabase $railsready_path $log_file
+  cd $bb_server_setup_path/src && curl -O https://raw.github.com/rebel-outpost/bb_server_setup/master/recipes/$distro.sh && bash $distro.sh $ruby_version $ruby_version_string $ruby_source_url $ruby_source_tar_name $ruby_source_dir_name $whichRuby $whichServer $whichDatabase $bb_server_setup_path $log_file
 fi
 echo -e "\n==> done running $distro specific commands..."
 
@@ -147,7 +111,7 @@ echo -e "\n==> done running $distro specific commands..."
 if [ $whichRuby -eq 1 ] ; then
   # Install Ruby
   echo -e "\n=> Downloading $ruby_version_string \n"
-  cd $railsready_path/src && wget $ruby_source_url
+  cd $bb_server_setup_path/src && wget $ruby_source_url
   echo -e "\n==> done..."
   echo -e "\n=> Extracting $ruby_version_string"
   tar -xzf $ruby_source_tar_name >> $log_file 2>&1
@@ -226,36 +190,10 @@ elif [ $whichRuby -eq 2 ] ; then
 fi
 echo "==> done..."
 
-# if [ $whichServer -eq 1 ] ; then
-#   echo -e "\n=> Installing Unicorn..."
-#   if [ $whichRuby -eq 1 ] ; then
-#     sudo gem install unicorn --no-ri --no-rdoc >> $log_file 2>&1
-#   elif [ $whichRuby -eq 2 ] ; then
-#     gem install unicorn --no-ri --no-rdoc >> $log_file 2>&1
-#   fi
-#   echo "==> done..."
-# elif [ $whichServer -eq 2 ] ; then
-#   echo -e "\n=> Installing Thin..."
-#   if [ $whichRuby -eq 1 ] ; then
-#     sudo gem install thin --no-ri --no-rdoc >> $log_file 2>&1
-#   elif [ $whichRuby -eq 2 ] ; then
-#     gem install thin --no-ri --no-rdoc >> $log_file 2>&1
-#   fi
-#   echo "==> done..."
-# elif [ $whichServer -eq 3 ] ; then
-#   echo -e "\n=> Installing Passenger..."
-#   if [ $whichRuby -eq 1 ] ; then
-#     sudo gem install passenger --no-ri --no-rdoc >> $log_file 2>&1
-#   elif [ $whichRuby -eq 2 ] ; then
-#     gem install passenger --no-ri --no-rdoc >> $log_file 2>&1
-#   fi
-#   echo "==> done..."
-# fi
-
 echo -e "\n#################################"
 echo    "### Installation is complete! ###"
 echo -e "#################################\n"
 
 echo -e "\n !!! logout and back in to access Ruby !!!\n"
 
-echo -e "\n Thanks!\n-Josh\n"
+echo -e "\n Thanks!\n-Bob Roberts\n"
